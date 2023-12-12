@@ -23,4 +23,10 @@ class Schedule extends Model
     public function office() {
         return $this->belongsTo(Office::class);
     }
+    public function shifts() {
+        return $this->hasMany(ScheduleShift::class);
+    }
+    public function employeeSchedules() {
+        return $this->hasMany(EmployeeSchedule::class);
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
+use App\Models\ScheduleShift;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -45,20 +46,35 @@ class ScheduleController extends Controller
         
         try {
             DB::beginTransaction();
+
+            $schedule = Schedule::create([
+                'user_id' => $request->user_id,
+                'office_id' => $request->office_id,
+                'working_start_date' => $request->working_start_date,
+                'working_end_date' => $request->working_end_date,
+            ]);
             
-            $period = CarbonPeriod::create($request->working_dates['start'], $request->working_dates['end']);
-            // Convert the period to an array of dates
+            $period = CarbonPeriod::create($schedule->working_start_date, $schedule->working_end_date);
+
             $dates = $period->toArray();
-            if($dates != []){
-                foreach ($dates as $working_date) {
-                    Schedule::create([
-                        'user_id' => $request->user_id,
-                        'office_id' => $request->office_id,
-                        'working_date' => $working_date,
-                        'working_time_in' => $request->working_time_in,
-                        'working_time_out' => $request->working_time_out,
-                        'working_hours' => $request->working_hours,
+
+            if($request->shifts && $request->shifts != []){
+                foreach ($request->shifts as $shiftKey => $shift) {
+
+                    $scheduleShift = $schedule->shifts()->create([
+                        'working_time_in' => $shift['working_time_in'],
+                        'working_time_out' => $shift['working_time_out'],
                     ]);
+
+                    foreach ($request->employees as $employeeKey => $employeeId) {
+                        foreach ($dates as $date) {
+                            $schedule->employeeSchedules()->create([
+                                'employee_id' => $employeeId,
+                                'schedule_shift_id' => $scheduleShift->id,
+                                'working_date' => $date,
+                            ]);
+                        }
+                    }
                 }
             }
             DB::commit();

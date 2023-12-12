@@ -17,10 +17,8 @@ class CreateSchedulesTable extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('office_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->date('working_date')->nullable();
-            $table->time('working_time_in')->nullable();
-            $table->time('working_time_out')->nullable();
-            $table->integer('working_hours')->nullable();
+            $table->date('working_start_date')->nullable();
+            $table->date('working_end_date')->nullable();
             $table->timestamps();
         });
     }
