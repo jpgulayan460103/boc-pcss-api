@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\UserController;
@@ -29,5 +30,6 @@ Route::group(['middleware' => 'auth:api'], function() {
         'users' => UserController::class,
         'offices' => OfficeController::class,
         'schedules' => ScheduleController::class,
+        'employees' => EmployeeController::class,
     ]);
 });
