@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        User::factory(10)->create();
-        Employee::factory(100)->create();
         $this->call([
             OfficeSeeder::class,
         ]);
+        Employee::factory(100)->create();
+        User::factory(10)->create();
     }
 }

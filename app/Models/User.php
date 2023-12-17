@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -21,11 +22,13 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
+        'role',
         'first_name',
         'middle_name',
         'last_name',
         'position',
         'image_path',
+        'office_id',
     ];
 
     public static function boot()
@@ -57,4 +60,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function office() : BelongsTo {
+        return $this->belongsTo(Office::class);
+    }
 }

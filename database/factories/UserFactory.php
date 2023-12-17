@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Office;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -27,11 +28,13 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
+            'role' => $this->faker->randomElement(['user', 'admin']),
             'first_name' => $this->faker->name,
             'middle_name' => $this->faker->lastName,
             'last_name' => $this->faker->lastName,
             'position' => $this->faker->jobTitle,
             'full_name' => $this->faker->name,
+            'office_id' => $this->faker->randomElement(Office::all()->pluck('id')),
         ];
     }
 }

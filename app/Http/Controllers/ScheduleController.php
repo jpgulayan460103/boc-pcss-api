@@ -23,7 +23,6 @@ class ScheduleController extends Controller
                 'user',
                 'office',
                 'shifts',
-                'employeeSchedules',
             ])->paginate(20),
         ];
     }
@@ -127,8 +126,8 @@ class ScheduleController extends Controller
      * @param  \App\Models\Schedule  $schedule
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Schedule $schedule)
+    public function destroy($id)
     {
-        //
+        Schedule::findOrFail($id)->delete();
     }
 }

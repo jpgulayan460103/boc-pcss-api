@@ -15,7 +15,9 @@ class UserController extends Controller
     public function index()
     {
         return [
-            'users' => User::paginate(20),
+            'users' => User::with([
+                'office'
+            ])->paginate(20),
         ];
     }
 
@@ -37,7 +39,10 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        User::create($request->all());
+        $user = User::create($request->all());
+        return [
+            'user' => $user
+        ];
     }
 
     /**
@@ -71,7 +76,11 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = User::findOrFail($id);
+        $user->update($request->all());
+        return [
+            'user' => $user
+        ];
     }
 
     /**
@@ -82,6 +91,6 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        User::findOrFail($id)->delete();
     }
 }
