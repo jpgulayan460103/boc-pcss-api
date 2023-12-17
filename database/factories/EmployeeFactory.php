@@ -21,6 +21,11 @@ class EmployeeFactory extends Factory
             'last_name' => $this->faker->lastName,
             'position' => $this->faker->jobTitle,
             'full_name' => $this->faker->name,
+            'is_overtimer' => $this->faker->boolean,
         ];
     }
+
+    protected $casts = [
+        'is_overtimer' => 'boolean',
+    ];
 }

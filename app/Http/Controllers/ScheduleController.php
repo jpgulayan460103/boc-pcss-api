@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Schedule;
 use App\Models\ScheduleShift;
+use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,8 @@ class ScheduleController extends Controller
             'schedules' => Schedule::with([
                 'user',
                 'office',
+                'shifts',
+                'employeeSchedules',
             ])->paginate(20),
         ];
     }
@@ -53,25 +56,25 @@ class ScheduleController extends Controller
                 'working_start_date' => $request->working_start_date,
                 'working_end_date' => $request->working_end_date,
             ]);
+        
+
             
-            $period = CarbonPeriod::create($schedule->working_start_date, $schedule->working_end_date);
-
-            $dates = $period->toArray();
-
             if($request->shifts && $request->shifts != []){
                 foreach ($request->shifts as $shiftKey => $shift) {
-
+                    
                     $scheduleShift = $schedule->shifts()->create([
                         'working_time_in' => $shift['working_time_in'],
                         'working_time_out' => $shift['working_time_out'],
                     ]);
-
-                    foreach ($request->employees as $employeeKey => $employeeId) {
-                        foreach ($dates as $date) {
+                    
+                    foreach ($request->employees as $employeeKey => $employee) {
+                        foreach ($request->working_dates as $date) {
+    
                             $schedule->employeeSchedules()->create([
-                                'employee_id' => $employeeId,
+                                'employee_id' => $employee['id'],
                                 'schedule_shift_id' => $scheduleShift->id,
-                                'working_date' => $date,
+                                'working_date' => $date['value'],
+                                'is_overtime' => $date['isWeekEnd'],
                             ]);
                         }
                     }

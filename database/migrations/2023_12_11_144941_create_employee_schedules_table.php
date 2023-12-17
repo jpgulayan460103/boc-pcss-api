@@ -19,7 +19,7 @@ class CreateEmployeeSchedulesTable extends Migration
             $table->foreignId('schedule_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('schedule_shift_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->date('working_date')->nullable();
-            $table->boolean('is_holiday')->default(0);
+            $table->boolean('is_overtime')->default(0);
             $table->timestamps();
         });
     }

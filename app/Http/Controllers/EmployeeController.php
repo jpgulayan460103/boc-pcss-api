@@ -37,7 +37,10 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $employee = Employee::create($request->all());
+        return [
+            'employee' => $employee
+        ];
     }
 
     /**
@@ -69,9 +72,13 @@ class EmployeeController extends Controller
      * @param  \App\Models\Employee  $employee
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Employee $employee)
+    public function update(Request $request, $id)
     {
-        //
+        $employee = Employee::findOrFail($id);
+        $employee->update($request->all());
+        return [
+            'employee' => $employee
+        ];
     }
 
     /**

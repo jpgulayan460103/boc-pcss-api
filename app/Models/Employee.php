@@ -15,6 +15,7 @@ class Employee extends Model
         'last_name',
         'full_name',
         'position',
+        'is_overtimer',
     ];
 
 

@@ -11,10 +11,16 @@ class Schedule extends Model
     protected $fillable = [
         'user_id',
         'office_id',
-        'working_date',
+        'working_start_date',
+        'working_end_date',
         'working_time_in',
         'working_time_out',
         'working_hours',
+    ];
+
+    protected $dates = [
+        'working_start_date',
+        'working_end_date',
     ];
 
     public function user() {

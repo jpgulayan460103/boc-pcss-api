@@ -20,6 +20,7 @@ class CreateEmployeesTable extends Migration
             $table->string('last_name')->nullable();
             $table->string('full_name')->fulltext();
             $table->string('position')->nullable();
+            $table->boolean('is_overtimer')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });

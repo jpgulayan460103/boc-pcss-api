@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class EmployeeSchedule extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'employee_id',
+        'schedule_id',
+        'schedule_shift_id',
+        'working_date',
+        'is_overtime',
+    ];
 }
