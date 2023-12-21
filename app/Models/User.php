@@ -64,4 +64,9 @@ class User extends Authenticatable
     public function office() : BelongsTo {
         return $this->belongsTo(Office::class);
     }
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = bcrypt($value);
+    }
 }

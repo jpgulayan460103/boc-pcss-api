@@ -17,7 +17,7 @@ class UserController extends Controller
         return [
             'users' => User::with([
                 'office'
-            ])->paginate(20),
+            ])->where('role', 'user')->paginate(20),
         ];
     }
 

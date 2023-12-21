@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Employee;
+use App\Models\Office;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EmployeeFactory extends Factory
@@ -22,6 +23,7 @@ class EmployeeFactory extends Factory
             'position' => $this->faker->jobTitle,
             'full_name' => $this->faker->name,
             'is_overtimer' => $this->faker->boolean,
+            'office_id' => $this->faker->randomElement(Office::all()->pluck('id')),
         ];
     }
 
