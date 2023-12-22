@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Holiday extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'holiday_date',
+        'name',
+    ];
+
+    protected $dates = [
+        'holiday_date',
+    ];
 }

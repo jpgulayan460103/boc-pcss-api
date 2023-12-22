@@ -16,4 +16,8 @@ class EmployeeSchedule extends Model
         'working_date',
         'is_overtime',
     ];
+
+    public function employee() {
+        return $this->belongsTo(Employee::class);
+    }
 }

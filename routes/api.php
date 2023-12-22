@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\UserController;
@@ -31,5 +32,7 @@ Route::group(['middleware' => 'auth:api'], function() {
         'offices' => OfficeController::class,
         'schedules' => ScheduleController::class,
         'employees' => EmployeeController::class,
+        'holidays' => HolidayController::class,
     ]);
 });
+Route::post('/schedules/{id}', [ScheduleController::class, 'download']);

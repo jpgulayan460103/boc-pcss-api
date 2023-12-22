@@ -14,7 +14,11 @@ class HolidayController extends Controller
      */
     public function index()
     {
-        //
+        $holidays = Holiday::all();
+
+        return [
+            'holidays' => $holidays
+        ];
     }
 
     /**
@@ -35,7 +39,13 @@ class HolidayController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+        $holiday = Holiday::create([
+            'holiday_date' => $request->holiday_date,
+            'name' => $request->name,
+        ]);
+
+        return $holiday;
     }
 
     /**
@@ -78,8 +88,8 @@ class HolidayController extends Controller
      * @param  \App\Models\Holiday  $holiday
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Holiday $holiday)
+    public function destroy($id)
     {
-        //
+        Holiday::findOrFail($id)->delete();
     }
 }
