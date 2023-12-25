@@ -25,7 +25,7 @@ class EmployeeRequest extends FormRequest
     {
         return [
             'first_name' => ['required'],
-            'middle_name' => ['required'],
+            // 'middle_name' => ['required'],
             'last_name' => ['required'],
             // 'full_name' => ['required'],
             'position' => ['required'],
