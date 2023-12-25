@@ -18,7 +18,7 @@ class UserController extends Controller
     {
         $users = User::with([
             'office'
-        ]);
+        ])->orderBy('full_name');
         $users->where('id', '<>', auth()->user()->id);
 
         if($request->q){

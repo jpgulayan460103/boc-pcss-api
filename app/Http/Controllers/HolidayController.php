@@ -14,7 +14,7 @@ class HolidayController extends Controller
      */
     public function index()
     {
-        $holidays = Holiday::all();
+        $holidays = Holiday::orderBy('holiday_date')->get();
 
         return [
             'holidays' => $holidays
