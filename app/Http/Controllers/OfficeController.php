@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\OfficeRequest;
 use App\Models\Office;
 use Illuminate\Http\Request;
 
@@ -41,7 +42,7 @@ class OfficeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(OfficeRequest $request)
     {
         $office = Office::create($request->all());
         return [
@@ -78,7 +79,7 @@ class OfficeController extends Controller
      * @param  \App\Models\Office  $office
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(OfficeRequest $request, $id)
     {
         $office = Office::findOrFail($id);
         $office->update($request->all());
