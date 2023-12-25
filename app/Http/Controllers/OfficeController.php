@@ -12,10 +12,16 @@ class OfficeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $offices = Office::orderBy('name');
+
+        if($request->q){
+            $query = $request->q;
+            $offices->where('name', 'like', "%$query%");
+        }
         return [
-            'offices' => Office::orderBy('name')->get()
+            'offices' => $offices->get()
         ];
     }
 
@@ -37,7 +43,10 @@ class OfficeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $office = Office::create($request->all());
+        return [
+            'office' => $office
+        ];
     }
 
     /**
@@ -69,9 +78,13 @@ class OfficeController extends Controller
      * @param  \App\Models\Office  $office
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Office $office)
+    public function update(Request $request, $id)
     {
-        //
+        $office = Office::findOrFail($id);
+        $office->update($request->all());
+        return [
+            'office' => $office
+        ];
     }
 
     /**
@@ -80,8 +93,8 @@ class OfficeController extends Controller
      * @param  \App\Models\Office  $office
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Office $office)
+    public function destroy($id)
     {
-        //
+        Office::findOrFail($id)->delete();
     }
 }

@@ -12,10 +12,16 @@ class EmployeeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $employees = Employee::with(['office']);
+
+        if($request->q){
+            $query = $request->q;
+            $employees->where('full_name', 'like', "%$query%");
+        }
         return [
-            'employees' => Employee::with(['office'])->paginate(100),
+            'employees' => $employees->paginate(100),
         ];
     }
 

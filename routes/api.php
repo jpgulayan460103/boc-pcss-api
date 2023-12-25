@@ -35,4 +35,5 @@ Route::group(['middleware' => 'auth:api'], function() {
         'holidays' => HolidayController::class,
     ]);
 });
-Route::post('/schedules/{id}', [ScheduleController::class, 'download']);
+Route::middleware('auth:api')->post('/schedules/{id}', [ScheduleController::class, 'download']);
+Route::middleware('auth:api')->post('/user/change-password', [UserController::class, 'updatePassword']);

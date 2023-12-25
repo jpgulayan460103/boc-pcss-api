@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -12,12 +14,20 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $users = User::with([
+            'office'
+        ]);
+        $users->where('id', '<>', auth()->user()->id);
+
+        if($request->q){
+            $query = $request->q;
+            $users->where('full_name', 'like', "%$query%");
+        }
+
         return [
-            'users' => User::with([
-                'office'
-            ])->where('role', 'user')->paginate(20),
+            'users' => $users->paginate(20),
         ];
     }
 
@@ -37,7 +47,7 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
         $user = User::create($request->all());
         return [
@@ -74,7 +84,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UserRequest $request, $id)
     {
         $user = User::findOrFail($id);
         $user->update($request->all());
@@ -92,5 +102,10 @@ class UserController extends Controller
     public function destroy($id)
     {
         User::findOrFail($id)->delete();
+    }
+
+    public function updatePassword(ChangePasswordRequest $request){
+        $user = User::find(auth()->user()->id);
+        $user->update($request->validated());
     }
 }
