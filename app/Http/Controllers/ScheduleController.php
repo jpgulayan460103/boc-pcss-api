@@ -131,7 +131,7 @@ class ScheduleController extends Controller
             "BOC",
             "CLARK",
             "SCHEDULING",
-            $schedule->office->name,
+            $schedule->office ? $schedule->office->name : '',
             Carbon::parse($schedule->working_start_date)->toDateString(),
             Carbon::parse($schedule->working_end_date)->toDateString(),
         ];
@@ -151,7 +151,7 @@ class ScheduleController extends Controller
         fputcsv($file, $line);
 
         $line = [
-            $schedule->office->name,
+            $schedule->office ? $schedule->office->name : '',
             Carbon::parse($schedule->working_start_date)->toDateString().' - '.Carbon::parse($schedule->working_end_date)->toDateString(),
         ];
         fputcsv($file, $line);
@@ -198,15 +198,31 @@ class ScheduleController extends Controller
         fputcsv($file, $line);
 
         foreach ($schedule->employeeSchedules as $employeeSchedule) {
+            $office = '';
+            $first_name = '';
+            $middle_name = '';
+            $last_name = '';
+            $position = '';
+            $is_overtimer = '';
+            if($employeeSchedule->employee){
+                if($employeeSchedule->employee->office){
+                    $office = $employeeSchedule->employee->office->name;
+                }
+                $first_name = $employeeSchedule->employee->first_name;
+                $middle_name = $employeeSchedule->employee->middle_name;
+                $last_name = $employeeSchedule->employee->last_name;
+                $position = $employeeSchedule->employee->position;
+                $is_overtimer = $employeeSchedule->employee->is_overtimer ? 'Overtimer' : 'Regular';
+            }
             $line = [
                 Carbon::parse($employeeSchedule->working_date)->toDateString(),
                 $employeeSchedule->is_overtime ? 'Overtime Duty' : 'Regular Duty',
-                $employeeSchedule->employee->office->name,
-                $employeeSchedule->employee->first_name,
-                $employeeSchedule->employee->middle_name,
-                $employeeSchedule->employee->last_name,
-                $employeeSchedule->employee->position,
-                $employeeSchedule->employee->is_overtimer ? 'Overtimer' : 'Regular',
+                $office,
+                $first_name,
+                $middle_name,
+                $last_name,
+                $position,
+                $is_overtimer,
             ];
             fputcsv($file, $line);
         }

@@ -27,7 +27,7 @@ class UserController extends Controller
         }
 
         return [
-            'users' => $users->paginate(20),
+            'users' => $users->paginate(10),
         ];
     }
 

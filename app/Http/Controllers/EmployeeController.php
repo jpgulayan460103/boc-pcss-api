@@ -22,7 +22,7 @@ class EmployeeController extends Controller
             $employees->where('full_name', 'like', "%$query%");
         }
         return [
-            'employees' => $employees->paginate(100),
+            'employees' => $employees->paginate(10),
         ];
     }
 
