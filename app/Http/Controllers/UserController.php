@@ -18,12 +18,24 @@ class UserController extends Controller
     {
         $users = User::with([
             'office'
-        ])->orderBy('full_name');
+        ]);
         $users->where('id', '<>', auth()->user()->id);
 
         if($request->q){
             $query = $request->q;
             $users->where('full_name', 'like', "%$query%");
+        }
+
+        if($request->sortTable && $request->sortTable != []){
+            if(isset($request->sortTable['field']) && isset($request->sortTable['order'])){
+                
+                $field = $request->sortTable['field'];
+                $order = strtolower($request->sortTable['order']) == 'desc' ? 'desc' : 'asc';
+
+                $users->orderBy($field, $order);
+            }
+        }else{
+            $users->orderBy('id', 'desc');
         }
 
         return [

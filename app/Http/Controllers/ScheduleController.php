@@ -122,6 +122,7 @@ class ScheduleController extends Controller
             'user',
             'office',
             'shifts',
+            'employeeSchedules' => fn($q) => $q->orderBy('working_date'),
             'employeeSchedules.employee.office'
         ])
         ->whereId($id)
@@ -148,57 +149,66 @@ class ScheduleController extends Controller
             "Office",
             "Schedule",
         ];
-        fputcsv($file, $line);
+        // fputcsv($file, $line);
 
         $line = [
             $schedule->office ? $schedule->office->name : '',
             Carbon::parse($schedule->working_start_date)->toDateString().' - '.Carbon::parse($schedule->working_end_date)->toDateString(),
         ];
-        fputcsv($file, $line);
+        // fputcsv($file, $line);
 
-        fputcsv($file, []);
+        // fputcsv($file, []);
 
         $line = [
             "Shifts"
         ];
-        fputcsv($file, $line);
+        // fputcsv($file, $line);
 
         $line = [
             "Time in",
             "Time out",
         ];
-        fputcsv($file, $line);
+        // fputcsv($file, $line);
         
-        
+        $shifts = [];
         foreach ($schedule->shifts as $shift) {
+            $shifts[] = $shift->working_time_in.' - '.$shift->working_time_out;
+
             $line = [
                 $shift->working_time_in,
                 $shift->working_time_out,
             ];
-            fputcsv($file, $line);
+            // fputcsv($file, $line);
         }
 
-        fputcsv($file, []);
+        $shifts_string = implode(",", $shifts);
+
+        // fputcsv($file, []);
 
         $line = [
             "Employees"
         ];
-        fputcsv($file, $line);
+        // fputcsv($file, $line);
 
         $line = [
             "Schedule Date",
             "Type of Duty",
-            "Office",
-            "Last Name",
+            "Assigned Office",
             "First Name",
             "Middle Name",
+            "Last Name",
+            "Originating Office",
             "Position", 
             "Employee Type",
         ];
+
+        foreach ($schedule->shifts as $shiftKey => $shift) {
+            $line[] = 'Shift'.($shiftKey+1);
+        }
         fputcsv($file, $line);
 
         foreach ($schedule->employeeSchedules as $employeeSchedule) {
-            $office = '';
+            $origin_office = '';
             $first_name = '';
             $middle_name = '';
             $last_name = '';
@@ -206,7 +216,7 @@ class ScheduleController extends Controller
             $is_overtimer = '';
             if($employeeSchedule->employee){
                 if($employeeSchedule->employee->office){
-                    $office = $employeeSchedule->employee->office->name;
+                    $origin_office = $employeeSchedule->employee->office->name;
                 }
                 $first_name = $employeeSchedule->employee->first_name;
                 $middle_name = $employeeSchedule->employee->middle_name;
@@ -217,13 +227,18 @@ class ScheduleController extends Controller
             $line = [
                 Carbon::parse($employeeSchedule->working_date)->toDateString(),
                 $employeeSchedule->is_overtime ? 'Overtime Duty' : 'Regular Duty',
-                $office,
+                $schedule->office ? $schedule->office->name : '',
                 $first_name,
                 $middle_name,
                 $last_name,
+                $origin_office,
                 $position,
                 $is_overtimer,
             ];
+
+            foreach ($schedule->shifts as $shiftKey => $shift) {
+                $line[] = $shift->working_time_in.' - '.$shift->working_time_out;
+            }
             fputcsv($file, $line);
         }
         

@@ -15,14 +15,38 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $employees = Employee::with(['office'])->orderBy('full_name');
+        $employees = Employee::with(['office']);
 
         if($request->q){
             $query = $request->q;
             $employees->where('full_name', 'like', "%$query%");
         }
+
+        if($request->office_id){
+            $office_id = $request->office_id;
+            $employees->where('office_id', $office_id);
+        }
+
+        if($request->sortTable && $request->sortTable != []){
+            if(isset($request->sortTable['field']) && isset($request->sortTable['order'])){
+                
+                $field = $request->sortTable['field'];
+                $order = strtolower($request->sortTable['order']) == 'desc' ? 'desc' : 'asc';
+
+                $employees->orderBy($field, $order);
+            }
+        }else{
+            $employees->orderBy('id', 'desc');
+        }
+
+        if($request->getType && $request->getType == 'all'){
+            $employees = $employees->get();
+        }else{
+            $employees = $employees->paginate(10);
+        }
+
         return [
-            'employees' => $employees->paginate(10),
+            'employees' => $employees,
         ];
     }
 
