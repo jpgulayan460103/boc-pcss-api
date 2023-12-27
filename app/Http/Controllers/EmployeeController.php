@@ -42,7 +42,7 @@ class EmployeeController extends Controller
         if($request->getType && $request->getType == 'all'){
             $employees = $employees->get();
         }else{
-            $employees = $employees->paginate(10);
+            $employees = $employees->paginate(50);
         }
 
         return [
