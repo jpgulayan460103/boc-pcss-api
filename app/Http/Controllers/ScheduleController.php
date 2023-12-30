@@ -69,7 +69,7 @@ class ScheduleController extends Controller
                         'working_time_out' => $shift['working_time_out'],
                     ]);
                     
-                    foreach ($request->employees as $employeeKey => $employee) {
+                    foreach ($shift['employees'] as $employeeKey => $employee) {
                         foreach ($request->working_dates as $date) {
 
                             $employeeSchedule = EmployeeSchedule::where('working_date', $date['value'])->where('employee_id', $employee['id'])->first();
@@ -116,7 +116,7 @@ class ScheduleController extends Controller
         //
     }
 
-    public function download($id)
+/*     public function download($id)
     {
         $schedule = Schedule::with([
             'user',
@@ -239,6 +239,120 @@ class ScheduleController extends Controller
             foreach ($schedule->shifts as $shiftKey => $shift) {
                 $line[] = $shift->working_time_in.' - '.$shift->working_time_out;
             }
+            fputcsv($file, $line);
+        }
+        
+        fclose($file);
+
+        return [
+            'url' => $fileDirectory,
+        ];
+    }
+ */
+
+    public function download($id)
+    {
+        $schedule = Schedule::with([
+            'user',
+            'office',
+            'shifts',
+            'employeeSchedules' => fn($q) => $q->orderBy('working_date'),
+            'employeeSchedules.employee.office'
+        ])
+        ->whereId($id)
+        ->first();
+
+        $fileNameArray = [
+            "BOC",
+            "CLARK",
+            "SCHEDULING",
+            $schedule->office ? $schedule->office->name : '',
+            Carbon::parse($schedule->working_start_date)->toDateString(),
+            Carbon::parse($schedule->working_end_date)->toDateString(),
+        ];
+        
+
+        $fileNameImploded = implode('-', $fileNameArray);
+
+        $fileName = Str::slug($fileNameImploded, '-');
+        $fileDirectory = "exports/$fileName.csv";
+
+        $file = fopen($fileDirectory,"w");
+
+        $line = [
+            "Assigned Office",
+            $schedule->office ? $schedule->office->name : '',
+        ];
+        fputcsv($file, $line);
+        
+        $line = [
+            "Assigned Schedule",
+            Carbon::parse($schedule->working_start_date)->toDateString().' - '.Carbon::parse($schedule->working_end_date)->toDateString(),
+        ];
+        fputcsv($file, $line);
+
+        fputcsv($file, []);
+
+        $line = [
+            "Shifts"
+        ];
+        // fputcsv($file, $line);
+
+        $line = [
+            "Time in",
+            "Time out",
+        ];
+        // fputcsv($file, $line);
+        
+        $shifts = [];
+        foreach ($schedule->shifts as $shift) {
+            $shifts[] = $shift->working_time_in.' - '.$shift->working_time_out;
+
+            $line = [
+                $shift->working_time_in,
+                $shift->working_time_out,
+            ];
+            // fputcsv($file, $line);
+        }
+
+        $shifts_string = implode(",", $shifts);
+
+        // fputcsv($file, []);
+
+        $line = [
+            "Employees"
+        ];
+        // fputcsv($file, $line);
+
+        $line = [
+            "Employee",
+            "Originating Office",
+            "Position", 
+            "Employee Type",
+            "Shift",
+        ];
+
+        fputcsv($file, $line);
+
+        $employeeSchedules = EmployeeSchedule::where('schedule_id', $schedule->id)
+            ->with([
+                'employee.office',
+                'schedule_shift'
+            ])
+            ->select([
+                'employee_id',
+                'schedule_shift_id'
+            ])
+            ->distinct()
+            ->get();
+        foreach ($employeeSchedules as $key => $employeeSchedule) {
+            $line = [
+                $employeeSchedule->employee->full_name,
+                $employeeSchedule->employee->office ? $employeeSchedule->employee->office->name : "",
+                $employeeSchedule->employee->position,
+                $employeeSchedule->employee->is_overtimer ? "Overtimer" : "Regular",
+                $employeeSchedule->schedule_shift ? $employeeSchedule->schedule_shift->working_time_in . " - ". $employeeSchedule->schedule_shift->working_time_out : '',
+            ];
             fputcsv($file, $line);
         }
         

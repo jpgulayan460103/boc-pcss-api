@@ -24,11 +24,8 @@ class Employee extends Model
     public static function boot()
     {
         parent::boot();
-        self::creating(function ($model) {
-            $model->full_name = $model->first_name." ".$model->middle_name." ".$model->last_name;
-        });
-        self::updating(function ($model) {
-            $model->full_name = $model->first_name." ".$model->middle_name." ".$model->last_name;
+        self::saved(function ($model) {
+            $model->full_name = $model->last_name.", ".$model->first_name." ".$model->middle_name;
         });
     }
 
