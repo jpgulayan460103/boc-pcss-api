@@ -15,7 +15,7 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $employees = Employee::with(['office']);
+        $employees = Employee::with(['office', 'position']);
 
         if($request->q){
             $query = $request->q;

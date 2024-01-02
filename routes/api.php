@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\OfficeController;
+use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ Route::group(['middleware' => 'auth:api'], function() {
         'schedules' => ScheduleController::class,
         'employees' => EmployeeController::class,
         'holidays' => HolidayController::class,
+        'positions' => PositionController::class,
     ]);
 });
 Route::middleware('auth:api')->post('/schedules/{id}', [ScheduleController::class, 'download']);
@@ -45,4 +47,5 @@ Route::middleware('auth:api')->get('/employees/search', [EmployeeController::cla
 //     'schedules' => ScheduleController::class,
 //     'employees' => EmployeeController::class,
 //     'holidays' => HolidayController::class,
+//     'positions' => PositionController::class,
 // ]);

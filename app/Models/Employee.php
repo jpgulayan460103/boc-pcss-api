@@ -18,6 +18,7 @@ class Employee extends Model
         'position',
         'is_overtimer',
         'office_id',
+        'position_id',
     ];
 
 
@@ -31,5 +32,9 @@ class Employee extends Model
 
     public function office() : BelongsTo {
         return $this->belongsTo(Office::class);
+    }
+
+    public function position() : BelongsTo {
+        return $this->belongsTo(Position::class);
     }
 }

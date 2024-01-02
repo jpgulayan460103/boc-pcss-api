@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             OfficeSeeder::class,
+            PositionSeeder::class,
         ]);
         Employee::factory(100)->create();
         User::factory(10)->create();
