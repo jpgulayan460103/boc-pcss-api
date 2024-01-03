@@ -35,10 +35,10 @@ return [
     'custom_font_dir'  => base_path('resources/fonts/'), // don't forget the trailing slash!
     'custom_font_data' => [
         'arialnarrow' => [ // must be lowercase and snake_case
-            'R'  => 'ARIALN.ttf',    // regular font
-            'B'  => 'ARIALNB.ttf',       // optional: bold font
+            'R'  => 'ARIALN.TTF',    // regular font
+            'B'  => 'ARIALNB.TTF',       // optional: bold font
             'I'  => 'Arial Narrow.ttf',     // optional: italic font
-            'BI' => 'Arialnbi.ttf' // optional: bold-italic font
+            'BI' => 'Arialnbi.TTF' // optional: bold-italic font
         ]
     ]
 ];
