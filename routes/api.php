@@ -40,6 +40,7 @@ Route::group(['middleware' => 'auth:api'], function() {
 Route::middleware('auth:api')->post('/schedules/{id}', [ScheduleController::class, 'download']);
 Route::middleware('auth:api')->post('/user/change-password', [UserController::class, 'updatePassword']);
 Route::middleware('auth:api')->get('/employees/search', [EmployeeController::class, 'updatePassword']);
+Route::get('/schedules/{id}/pdf', [ScheduleController::class, 'pdf']);
 
 // Route::resources([
 //     'users' => UserController::class,

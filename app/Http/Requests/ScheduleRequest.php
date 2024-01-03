@@ -71,32 +71,46 @@ class ScheduleRequest extends FormRequest
                 }
             }
 
-            if(isset($shift['employees']) && $shift['employees'] == array()){
-                $validator->errors()->add("shifts.$keyShift.employees", 'Shift '.($keyShift + 1).' has no employees added.');
+            if(isset($shift['positions']) && $shift['positions'] == array()){
+                $validator->errors()->add("shifts.$keyShift.positions", 'Shift '.($keyShift + 1).' has no shift composition added.');
             }else{
 
-                $employeeErrors = [];
+                foreach ($shift['positions'] as $positionKey => $position) {
+                    if($position['employees'] > $position['value']['employees_count']){
+                        $validator->errors()->add("shifts.$keyShift.positions.$positionKey", ''.ucfirst($position['value']['name']).' employee limit reached.');
+                    }
 
-                foreach ($shift['employees'] as $employeeKey => $employee) {
-                    foreach (request('working_dates') as $date) {
+                    if($position['employees'] <= 0){
+                        $validator->errors()->add("shifts.$keyShift.positions.$positionKey", 'Number of '.strtolower($position['value']['name']).' required.');
+                    }
 
-                        $employeeSchedule = EmployeeSchedule::with(['schedule.office'])->where('working_date', $date['value'])->where('employee_id', $employee['id'])->first();
-                        if($employeeSchedule){
-                            $employeeErrors["shift.".$shift['uuid'].".employee.".$employee['id']]["label"] = $employee['full_name'].', an employee scheduled for shift '.($keyShift + 1).', has conflicting schedule.';
-                            $employeeErrors["shift.".$shift['uuid'].".employee.".$employee['id']]["errors"][] = [
-                                'date' => $date,
-                                'schedule' => $employeeSchedule,
-                            ];
-                            // $validator->errors()->add("shift.".$shift['uuid'].".employee.".$employee['id'], 'Conflicting schedule found on '.$employee['full_name'].' please review.');
-                        }
+                    if(!is_int($position['employees'])){
+                        $validator->errors()->add("shifts.$keyShift.positions.$positionKey", 'Number of '.strtolower($position['value']['name']).' is not a valid quantity.');
                     }
                 }
 
-                // ddh($employeeErrors);
-                foreach($employeeErrors as $employeeErrorKey => $employeeError){
-                    $validator->errors()->add($employeeErrorKey, $employeeError);
-                }
-                // exit;
+                // $employeeErrors = [];
+
+                // foreach ($shift['employees'] as $employeeKey => $employee) {
+                //     foreach (request('working_dates') as $date) {
+
+                //         $employeeSchedule = EmployeeSchedule::with(['schedule.office'])->where('working_date', $date['value'])->where('employee_id', $employee['id'])->first();
+                //         if($employeeSchedule){
+                //             $employeeErrors["shift.".$shift['uuid'].".employee.".$employee['id']]["label"] = $employee['full_name'].', an employee scheduled for shift '.($keyShift + 1).', has conflicting schedule.';
+                //             $employeeErrors["shift.".$shift['uuid'].".employee.".$employee['id']]["errors"][] = [
+                //                 'date' => $date,
+                //                 'schedule' => $employeeSchedule,
+                //             ];
+                //             // $validator->errors()->add("shift.".$shift['uuid'].".employee.".$employee['id'], 'Conflicting schedule found on '.$employee['full_name'].' please review.');
+                //         }
+                //     }
+                // }
+
+                // // ddh($employeeErrors);
+                // foreach($employeeErrors as $employeeErrorKey => $employeeError){
+                //     $validator->errors()->add($employeeErrorKey, $employeeError);
+                // }
+                // // exit;
             }
             
         }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
@@ -36,5 +37,9 @@ class Employee extends Model
 
     public function position() : BelongsTo {
         return $this->belongsTo(Position::class);
+    }
+
+    public function employeeSchedules() : HasMany {
+        return $this->hasMany(EmployeeSchedule::class);
     }
 }
