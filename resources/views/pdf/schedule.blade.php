@@ -8,10 +8,10 @@
         @page {
             header: page-header;
             footer: page-footer;
-            margin-top: 1.25in;
-            margin-left: 0.25in;
-            margin-right: 0.25in;
-            margin-bottom: 0.75in;
+            margin-top: 0.25in;
+            margin-left: 0.5in;
+            margin-right: 0.5in;
+            margin-bottom: 0.5in;
         }
         @font-face {
             font-family: arialnarrow;
@@ -43,7 +43,7 @@
 </head>
 <body>
 
-<htmlpageheader name="page-header">
+<!-- <htmlpageheader name="page-header">
     <div>
         <img style="margin-top: 20pt;" src="{{ public_path('images/pdf-header-1.png') }}" alt="">
     </div>
@@ -51,10 +51,9 @@
 
 <htmlpagefooter name="page-footer">
     <div style="padding-bottom: 10pt;">
-        <!-- <span style="top: 300pt;" class="fill-text">asdasd</span> -->
         <img src="{{ public_path('images/pdf-footer-1.png') }}" alt="">
     </div>
-</htmlpagefooter>
+</htmlpagefooter> -->
     <p style="text-align: center;">
         <b>
             <span id="heading">Working Schedule</span><br>
@@ -64,28 +63,33 @@
     <table id="schedule-table">
         <thead>
             <tr>
-                <th style="text-align: center;">Schedule Date</th>
-                <th style="text-align: center;">Type of Duty</th>
-                <th style="text-align: center;">Assigned Office</th>
+                <th style="text-align: center;">Schedule Date and Time</th>
                 <th style="text-align: center;">Full Name</th>
-                <th style="text-align: center;">Originating Office</th>
                 <th style="text-align: center;">Position</th>
-                <th style="text-align: center;">Employee Type</th>
-                <th style="text-align: center;">Shift</th>
+                <th style="text-align: center;">Assigned Office</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($employees as $employee)
-            <tr>
-                <td style="text-align: center;">{{ $employee['working_date'] }}</td>
-                <td style="text-align: center;">{{ $employee['duty_type'] }}</td>
-                <td style="text-align: center;">{{ $employee['assigned_office'] }}</td>
-                <td style="text-align: center;">{{ $employee['full_name'] }}</td>
-                <td style="text-align: center;">{{ $employee['origin_office'] }}</td>
-                <td style="text-align: center;">{{ $employee['position'] }}</td>
-                <td style="text-align: center;">{{ $employee['is_overtimer'] }}</td>
-                <td style="text-align: center;">{{ $employee['shift'] }}</td>
-            </tr>
+            @foreach($schedules as $scheduleKey => $workingDates)
+                @foreach($workingDates as $workingDateKey => $shifts)
+                    <tr>
+                        <td style="text-align: center;">
+                            {{ $shifts[0]['working_date'] }}<br>
+                            {{ $shifts[0]['shift'] }}
+                        </td>
+                        <td style="text-align: center;">
+                            @foreach($shifts as $shiftKey => $employee)
+                            <span>{{ $employee['full_name'] }}<br></span>
+                            @endForeach
+                        </td>
+                        <td style="text-align: center;">
+                            @foreach($shifts as $shiftKey => $employee)
+                            <span>{{ $employee['position'] }}<br></span>
+                            @endForeach
+                        </td>
+                        <td style="text-align: center;">{{ $shifts[0]['assigned_office'] }}</td>
+                    </tr>
+                @endForeach
             @endForeach
         </tbody>
     </table>

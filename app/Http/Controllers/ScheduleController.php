@@ -164,6 +164,7 @@ class ScheduleController extends Controller
             'shifts',
             'employeeSchedules' => fn($q) => $q->orderBy('working_date'),
             'employeeSchedules.employee.office',
+            'employeeSchedules.employee.position',
             'employeeSchedules.schedule_shift',
         ])
         ->whereId($id)
@@ -197,11 +198,13 @@ class ScheduleController extends Controller
                 if($employeeSchedule->employee->office){
                     $origin_office = $employeeSchedule->employee->office->name;
                 }
+                if($employeeSchedule->employee->position){
+                    $position = $employeeSchedule->employee->position->name;
+                }
                 $full_name = $employeeSchedule->employee->full_name;
                 $first_name = $employeeSchedule->employee->first_name;
                 $middle_name = $employeeSchedule->employee->middle_name;
                 $last_name = $employeeSchedule->employee->last_name;
-                $position = $employeeSchedule->employee->position;
                 $is_overtimer = $employeeSchedule->employee->is_overtimer ? 'Overtimer' : 'Regular';
             }
             if($employeeSchedule->schedule_shift){
@@ -224,10 +227,18 @@ class ScheduleController extends Controller
             array_push($employees, $line);
         }
 
+        $employeeCollection = collect($employees);
+
+        $employeeCollection = $employeeCollection->groupBy(['working_date', function ($item) {
+            return $item['shift'];
+        }], false);
+
         $data = [
-          'employees' => $employees,
+          'schedules' => $employeeCollection,
           'schedule' => $schedule,
         ];
+
+        // return $data;
 
         $pdf = PDF::loadView('pdf.schedule', $data);
         if($request->view == 1){
