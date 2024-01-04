@@ -61,36 +61,51 @@ class ScheduleController extends Controller
                 'working_start_date' => $request->working_start_date,
                 'working_end_date' => $request->working_end_date,
             ]);
-        
-
             
+            
+            
+            $allEmployees = Employee::orderBy('full_name')->get();
+            $allEmployees = collect($allEmployees->toArray());
+
+            $test = [];
             if($request->shifts && $request->shifts != []){
+
+                $employeesPool = $allEmployees->times(count($request->working_dates))->flatMap(function ($item) use ($allEmployees) {
+                    return $allEmployees->map(function ($item, $key) {
+                        $item['uuid'] = (string)Str::uuid();
+                        return $item;
+                    });
+                });
+
+                $scheduleShifts = [];
                 foreach ($request->shifts as $shiftKey => $shift) {
-                    
-                    $scheduleShift = $schedule->shifts()->create([
+
+                    $scheduleShifts[$shiftKey] = $schedule->shifts()->create([
                         'working_time_in' => $shift['working_time_in'],
                         'working_time_out' => $shift['working_time_out'],
                     ]);
+                }
+                
+                foreach ($request->working_dates as $dateKey => $date) {
 
-                    foreach ($shift['positions'] as $positionKey => $position) {
-                        $employeesToAssign = $position['employees'];
-                        $allEmployees = Employee::where('position_id', $position['value']['id'])->orderBy('full_name')->get();
-                        $allEmployees = collect($allEmployees->toArray())->unique('full_name');
+                    foreach ($request->shifts as $shiftKey => $shift) {
+                        
+                        // $scheduleShift = $schedule->shifts()->create([
+                        //     'working_time_in' => $shift['working_time_in'],
+                        //     'working_time_out' => $shift['working_time_out'],
+                        // ]);
 
-                        $employeesPool = $allEmployees->times(count($request->working_dates))->flatMap(function ($item) use ($allEmployees) {
-                            return $allEmployees->map(function ($item, $key) {
-                                $item['uuid'] = (string)Str::uuid();
-                                return $item;
-                            });
-                        });
 
-                        $test = [];
+                        foreach ($shift['positions'] as $positionKey => $position) {
+                            $employeesToAssign = $position['employees'];
 
-                        foreach ($request->working_dates as $dateKey => $date) {
+                            $filteredEmployeesPool = $employeesPool->where('position_id', $position['value']['id']);
+                            
+                            $filteredEmployeesPool = $filteredEmployeesPool->unique('full_name');
 
                             //get available employees
                             $availableEmployeeIds = [];
-                            foreach ($employeesPool as $employee) {
+                            foreach ($filteredEmployeesPool as $employeeKey => $employee) {
                                 $hasSchedule = EmployeeSchedule::wherehas('employee', function($query) use ($employee) {
                                     $query->where('full_name', $employee['full_name']);
                                 })->where('working_date', $date['value'])->first();
@@ -117,18 +132,15 @@ class ScheduleController extends Controller
                             foreach ($forScheduledEmployees as $key => $employee) {
                                 $schedule->employeeSchedules()->create([
                                     'employee_id' => $employee['id'],
-                                    'schedule_shift_id' => $scheduleShift->id,
+                                    'schedule_shift_id' => $scheduleShifts[$shiftKey]->id,
                                     'working_date' => $date['value'],
                                     'is_overtime' => ($date['isWeekEnd'] || $date['isHoliday']),
                                 ]);
                             }
                         }
-
-                        ddh($test);
-                    }
-
-
-                }
+                    }//working
+                }//shift
+                // ddh($test);
             }
             DB::commit();
             return $schedule;
