@@ -65,7 +65,7 @@ class ScheduleController extends Controller
             
             
             $allEmployees = Employee::orderBy('full_name')->get();
-            $allEmployees = collect($allEmployees->toArray());
+            $allEmployees = collect($allEmployees->toArray())->unique('full_name');
 
             $test = [];
             if($request->shifts && $request->shifts != []){
@@ -101,7 +101,7 @@ class ScheduleController extends Controller
 
                             $filteredEmployeesPool = $employeesPool->where('position_id', $position['value']['id']);
                             
-                            $filteredEmployeesPool = $filteredEmployeesPool->unique('full_name');
+                            $filteredEmployeesPool = $filteredEmployeesPool;
 
                             //get available employees
                             $availableEmployeeIds = [];
