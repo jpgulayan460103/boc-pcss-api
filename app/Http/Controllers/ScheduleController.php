@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PDF;
+use Illuminate\Support\Collection;
 
 class ScheduleController extends Controller
 {
@@ -70,60 +71,63 @@ class ScheduleController extends Controller
                         'working_time_in' => $shift['working_time_in'],
                         'working_time_out' => $shift['working_time_out'],
                     ]);
-                    
-                    // foreach ($shift['employees'] as $employeeKey => $employee) {
-                    //     foreach ($request->working_dates as $date) {
-
-                    //         $employeeSchedule = EmployeeSchedule::where('working_date', $date['value'])->where('employee_id', $employee['id'])->first();
-                    //         if($employeeSchedule){
-
-                    //         }else{
-                    //             $schedule->employeeSchedules()->create([
-                    //                 'employee_id' => $employee['id'],
-                    //                 'schedule_shift_id' => $scheduleShift->id,
-                    //                 'working_date' => $date['value'],
-                    //                 'is_overtime' => ($date['isWeekEnd'] || $date['isHoliday']),
-                    //             ]);
-                    //         }
-                    //     }
-                    // }
-
 
                     foreach ($shift['positions'] as $positionKey => $position) {
                         $employeesToAssign = $position['employees'];
-                        foreach ($request->working_dates as $dateKey => $date) {
-                            $availableEmployees = Employee::where('position_id', $position['value']['id'])->orderBy('full_name');
-                            $availableEmployees->whereDoesntHave('employeeSchedules', function($query) use ($date) {
-                                $query->where('working_date', $date['value']);
+                        $allEmployees = Employee::where('position_id', $position['value']['id'])->orderBy('full_name')->get();
+                        $allEmployees = collect($allEmployees->toArray())->unique('full_name');
+
+                        $employeesPool = $allEmployees->times(count($request->working_dates))->flatMap(function ($item) use ($allEmployees) {
+                            return $allEmployees->map(function ($item, $key) {
+                                $item['uuid'] = (string)Str::uuid();
+                                return $item;
                             });
+                        });
 
-                            $availableEmployees = $availableEmployees->get();
-                            $availableEmployeeIds = $availableEmployees->pluck('id');
+                        $test = [];
 
-                            // $uniqueEmployees = $availableEmployees->unique('full_name');
+                        foreach ($request->working_dates as $dateKey => $date) {
 
-                            // $availableEmployeeIds = $uniqueEmployees->pluck('id');
+                            //get available employees
+                            $availableEmployeeIds = [];
+                            foreach ($employeesPool as $employee) {
+                                $hasSchedule = EmployeeSchedule::wherehas('employee', function($query) use ($employee) {
+                                    $query->where('full_name', $employee['full_name']);
+                                })->where('working_date', $date['value'])->first();
 
-                            if($availableEmployeeIds->count() != 0){
+                                if($hasSchedule){
 
-                                if($availableEmployeeIds->count() < $employeesToAssign){
-                                    $randomEmployeeIds = $availableEmployeeIds->random($availableEmployeeIds->count());
                                 }else{
-                                    $randomEmployeeIds = $availableEmployeeIds->random($employeesToAssign);
+                                    $availableEmployeeIds[] = $employee['uuid'];
                                 }
-    
-                                foreach ($randomEmployeeIds as $key => $employeeId) {
-                                    $schedule->employeeSchedules()->create([
-                                        'employee_id' => $employeeId,
-                                        'schedule_shift_id' => $scheduleShift->id,
-                                        'working_date' => $date['value'],
-                                        'is_overtime' => ($date['isWeekEnd'] || $date['isHoliday']),
-                                    ]);
+
+                                if(count($availableEmployeeIds) == $employeesToAssign){
+                                    break;
                                 }
                             }
 
+                            //pick the first employees to assign
+                            $availableEmployees = $employeesPool->whereIn('uuid', $availableEmployeeIds);
+                            $forScheduledEmployees = $availableEmployees->take($employeesToAssign);
+
+                            $employeesPool = $employeesPool->whereNotIn('uuid', $forScheduledEmployees->pluck('uuid'));
+
+                            $test[] = $forScheduledEmployees;
+
+                            foreach ($forScheduledEmployees as $key => $employee) {
+                                $schedule->employeeSchedules()->create([
+                                    'employee_id' => $employee['id'],
+                                    'schedule_shift_id' => $scheduleShift->id,
+                                    'working_date' => $date['value'],
+                                    'is_overtime' => ($date['isWeekEnd'] || $date['isHoliday']),
+                                ]);
+                            }
                         }
+
+                        ddh($test);
                     }
+
+
                 }
             }
             DB::commit();
