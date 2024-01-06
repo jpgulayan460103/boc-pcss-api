@@ -16,7 +16,7 @@ class EmployeeLastNameSeeder extends Seeder
     {
         $employees = Employee::get();
         foreach ($employees as $key => $employee) {
-            $employee->full_name = $employee->last_name.", ".$employee->first_name." ".$employee->middle_name;
+            $employee->full_name = trim($employee->last_name.", ".$employee->first_name." ".$employee->middle_name);
             $employee->save();
         }
     }

@@ -15,7 +15,6 @@ class Employee extends Model
         'first_name',
         'middle_name',
         'last_name',
-        'full_name',
         'is_overtimer',
         'office_id',
         'position_id',
@@ -25,8 +24,11 @@ class Employee extends Model
     public static function boot()
     {
         parent::boot();
-        self::saved(function ($model) {
-            $model->full_name = $model->last_name.", ".$model->first_name." ".$model->middle_name;
+        self::creating(function ($model) {
+            $model->full_name = trim($model->last_name.", ".$model->first_name." ".$model->middle_name);
+        });
+        self::updating(function ($model) {
+            $model->full_name = trim($model->last_name.", ".$model->first_name." ".$model->middle_name);
         });
     }
 
