@@ -27,9 +27,11 @@ class ScheduleRequest extends FormRequest
     {
         return [
             // 'employees' => ['array', 'required'],
-            'shifts' => ['array', 'required'],
+            // 'shifts' => ['array', 'required'],
             'working_dates' => ['array'],
-            'office_id' => ['required'],
+            'offices' => ['required', 'array'],
+            'offices.*.shifts' => ['required','array'],
+            'offices.*.shifts.*.positions' => ['required', 'array'],
             'working_end_date' => ['required'],
             'working_start_date' => ['required'],
         ];
@@ -38,81 +40,63 @@ class ScheduleRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $shifts = request()->input('shifts');
-            foreach ($shifts as $keyShift => $shift) {
-                $working_time_in = Carbon::parse('2023-01-01 '.$shift['working_time_in']);
-                $working_time_out = Carbon::parse('2023-01-01 '.$shift['working_time_out']);
+            $offices = request()->input('offices');
 
-                if($working_time_in->diffInHours($working_time_out, false) <= 0){
-                    $validator->errors()->add("shifts.$keyShift.working_time_out", 'Shift '.($keyShift + 1).' time out ('.$working_time_out->format('h:i:s A').') must not be earlier than time in ('.$working_time_in->format('h:i:s A').').');
+            foreach($offices as $officeKey => $office){                
+                foreach ($office['shifts'] as $shiftKey => $shift) {
+                    $working_time_in = Carbon::parse('2023-01-01 '.$shift['working_time_in']);
+                    $working_time_out = Carbon::parse('2023-01-01 '.$shift['working_time_out']);
+    
+                    if($working_time_in->diffInSeconds($working_time_out, false) <= 0){
+                        // $validator->errors()->add("offices.$officeKey.shifts.$shiftKey.working_time_out", 'Shift '.($shiftKey + 1).' time out ('.$working_time_out->format('h:i:s A').') must not be earlier than time in ('.$working_time_in->format('h:i:s A').').');
+                    }
+    
+                    $this->validateShifts($validator, $working_time_in, $working_time_out, $officeKey, $shiftKey);
+                    
                 }
-
-                $this->validateShifts($validator, $working_time_in, $working_time_out, $keyShift);
-                
             }
 
         });
     }
 
-    public function validateShifts($validator, $working_time_in, $working_time_out, $index){
-        $shifts = request()->input('shifts');
-        foreach ($shifts as $keyShift => $shift) {
-            if($index != $keyShift){
-                $added_working_time_in = Carbon::parse('2023-01-01 '.$shift['working_time_in']);
-                $added_working_time_out = Carbon::parse('2023-01-01 '.$shift['working_time_out']);
-                $check_working_time_in = $added_working_time_in->between($working_time_in, $working_time_out, true);
-                $check_working_time_out = $added_working_time_out->between($working_time_in, $working_time_out, true);
+    public function validateShifts($validator, $working_time_in, $working_time_out, $officeIndex, $shiftIndex){
+        $offices = request()->input('offices');
+        foreach($offices as $officeKey => $office){          
+            foreach ($office['shifts'] as $shiftKey => $shift) {
+                if($shiftIndex != $shiftKey || $officeKey != $officeIndex){
+                    $added_working_time_in = Carbon::parse('2023-01-01 '.$shift['working_time_in']);
+                    $added_working_time_out = Carbon::parse('2023-01-01 '.$shift['working_time_out']);
+                    $check_working_time_in = $added_working_time_in->between($working_time_in, $working_time_out, true);
+                    $check_working_time_out = $added_working_time_out->between($working_time_in, $working_time_out, true);
 
-                if($check_working_time_in){
-                    $validator->errors()->add("shifts.$keyShift.working_time_out", 'Shift '.($keyShift + 1).' conflicts time schedule in shift '.($index + 1).'.');
+                    if($check_working_time_in){
+                        // $validator->errors()->add("offices.$officeKey.shifts.$shiftKey.working_time_out", 'Shift '.($shiftKey + 1).' conflicts time schedule in shift '.($shiftIndex + 1).'.');
+                    }
+                    if($check_working_time_out){
+                        // $validator->errors()->add("offices.$officeKey.shifts.$shiftKey.working_time_out", 'Shift '.($shiftKey + 1).' conflicts time schedule in shift '.($shiftIndex + 1).'.');
+                    }
                 }
-                if($check_working_time_out){
-                    $validator->errors()->add("shifts.$keyShift.working_time_out", 'Shift '.($keyShift + 1).' conflicts time schedule in shift '.($index + 1).'.');
+
+                if(isset($shift['positions']) && $shift['positions'] == array()){
+                    // $validator->errors()->add("offices.$officeKey.shifts.$shiftKey.positions", 'Shift '.($shiftKey + 1).' has no shift composition added.');
+                }else{
+
+                    foreach ($shift['positions'] as $positionKey => $position) {
+                        if($position['employees'] > $position['value']['employees_count']){
+                            $validator->errors()->add("offices.$officeKey.shifts.$shiftKey.positions.$positionKey", ''.ucfirst($position['value']['name']).' employee limit reached.');
+                        }
+
+                        if($position['employees'] <= 0){
+                            $validator->errors()->add("offices.$officeKey.shifts.$shiftKey.positions.$positionKey", 'Number of '.strtolower($position['value']['name']).' required.');
+                        }
+
+                        if(!is_int($position['employees'])){
+                            $validator->errors()->add("offices.$officeKey.shifts.$shiftKey.positions.$positionKey", 'Number of '.strtolower($position['value']['name']).' is not a valid quantity.');
+                        }
+                    }
                 }
+                
             }
-
-            if(isset($shift['positions']) && $shift['positions'] == array()){
-                $validator->errors()->add("shifts.$keyShift.positions", 'Shift '.($keyShift + 1).' has no shift composition added.');
-            }else{
-
-                foreach ($shift['positions'] as $positionKey => $position) {
-                    if($position['employees'] > $position['value']['employees_count']){
-                        $validator->errors()->add("shifts.$keyShift.positions.$positionKey", ''.ucfirst($position['value']['name']).' employee limit reached.');
-                    }
-
-                    if($position['employees'] <= 0){
-                        $validator->errors()->add("shifts.$keyShift.positions.$positionKey", 'Number of '.strtolower($position['value']['name']).' required.');
-                    }
-
-                    if(!is_int($position['employees'])){
-                        $validator->errors()->add("shifts.$keyShift.positions.$positionKey", 'Number of '.strtolower($position['value']['name']).' is not a valid quantity.');
-                    }
-                }
-
-                // $employeeErrors = [];
-
-                // foreach ($shift['employees'] as $employeeKey => $employee) {
-                //     foreach (request('working_dates') as $date) {
-
-                //         $employeeSchedule = EmployeeSchedule::with(['schedule.office'])->where('working_date', $date['value'])->where('employee_id', $employee['id'])->first();
-                //         if($employeeSchedule){
-                //             $employeeErrors["shift.".$shift['uuid'].".employee.".$employee['id']]["label"] = $employee['full_name'].', an employee scheduled for shift '.($keyShift + 1).', has conflicting schedule.';
-                //             $employeeErrors["shift.".$shift['uuid'].".employee.".$employee['id']]["errors"][] = [
-                //                 'date' => $date,
-                //                 'schedule' => $employeeSchedule,
-                //             ];
-                //             // $validator->errors()->add("shift.".$shift['uuid'].".employee.".$employee['id'], 'Conflicting schedule found on '.$employee['full_name'].' please review.');
-                //         }
-                //     }
-                // }
-
-                // // ddh($employeeErrors);
-                // foreach($employeeErrors as $employeeErrorKey => $employeeError){
-                //     $validator->errors()->add($employeeErrorKey, $employeeError);
-                // }
-                // // exit;
-            }
-            
         }
     }
 
@@ -120,6 +104,8 @@ class ScheduleRequest extends FormRequest
     {
         return [
             'employees.required' => 'You must add employees to your desired schedule.',
+            'offices.*.shifts.required' => 'You must add shifting schedules.',
+            'offices.*.shifts.*.positions.required' => 'You must add shifting compositions.',
         ];
     }
 }

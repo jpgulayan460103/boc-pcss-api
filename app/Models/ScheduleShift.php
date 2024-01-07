@@ -14,5 +14,14 @@ class ScheduleShift extends Model
         'working_time_in',
         'working_time_out',
         'working_hours',
+        'office_id',
     ];
+
+    public function schedule() {
+        return $this->belongsTo(Schedule::class);
+    }
+
+    public function office() {
+        return $this->belongsTo(Office::class);
+    }
 }

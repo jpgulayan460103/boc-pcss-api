@@ -71,7 +71,8 @@
         </thead>
         <tbody>
             @foreach($schedules as $scheduleKey => $workingDates)
-                @foreach($workingDates as $workingDateKey => $shifts)
+                @foreach($workingDates as $workingDateKey => $offices)
+                    @foreach($offices as $officeKey => $shifts)
                     <tr>
                         <td style="text-align: center;">
                             {{ $shifts[0]['working_date'] }}<br>
@@ -89,6 +90,7 @@
                         </td>
                         <td style="text-align: center;">{{ $shifts[0]['assigned_office'] }}</td>
                     </tr>
+                    @endForeach
                 @endForeach
             @endForeach
         </tbody>

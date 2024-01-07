@@ -32,6 +32,9 @@ class Schedule extends Model
     public function shifts() {
         return $this->hasMany(ScheduleShift::class);
     }
+    public function offices() {
+        return $this->hasMany(ScheduleShift::class)->select(['office_id', 'schedule_id'])->distinct();
+    }
     public function employeeSchedules() {
         return $this->hasMany(EmployeeSchedule::class);
     }

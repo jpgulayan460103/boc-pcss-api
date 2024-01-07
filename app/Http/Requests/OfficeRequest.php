@@ -24,7 +24,14 @@ class OfficeRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => ['required']
+            'name' => ['required', 'unique:offices,name']
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'name.unique' => 'The office name is already in the list.'
         ];
     }
 }
