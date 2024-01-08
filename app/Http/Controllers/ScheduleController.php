@@ -268,8 +268,8 @@ class ScheduleController extends Controller
 
         $employeeCollection = collect($employees);
 
-        $employeeCollection = $employeeCollection->groupBy('working_date')->map(function ($items) {
-            return $items->groupBy(['assigned_office', function ($item) {
+        $employeeCollection = $employeeCollection->groupBy('assigned_office')->map(function ($items) {
+            return $items->groupBy(['working_date', function ($item) {
                 return $item['shift'];
             }], false);
         });
