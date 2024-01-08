@@ -53,7 +53,7 @@ class ScheduleController extends Controller
     {
 
         $allEmployees = Employee::orderBy('full_name')->get();
-        $allEmployees = collect($allEmployees->toArray())->unique('full_name');
+        $allEmployees = collect($allEmployees->toArray());
 
         $employeesPool = $allEmployees->times(count($request->working_dates))->flatMap(function ($item) use ($allEmployees) {
             return $allEmployees->map(function ($item, $key) {
@@ -97,7 +97,7 @@ class ScheduleController extends Controller
                                 foreach ($shift['positions'] as $positionKey => $position) {
                                     $employeesToAssign = $position['employees'];
         
-                                    $filteredEmployeesPool = $employeesPool->where('position_id', $position['value']['id']);
+                                    $filteredEmployeesPool = $employeesPool->where('position_id', $position['value']['id'])->where('office_id', $office['value']['id']);
         
                                     //get available employees
                                     $selectedEmployees = collect([]);
@@ -113,7 +113,10 @@ class ScheduleController extends Controller
         
                                         foreach ($filteredEmployeesPool as $employeeKey => $employee) {
                                             
-                                            $hasNoSchedule = EmployeeSchedule::where('working_date', $date['value'])->where('employee_id', $employee['id'])->count() == 0;
+                                            $hasNoSchedule = EmployeeSchedule::where('working_date', $date['value'])
+                                            ->whereRelation('employee', function($query) use ($employee) {
+                                                $query->where('full_name', $employee['full_name']);
+                                            })->count() == 0;
         
                                             if($hasNoSchedule){
                                                 if(!$selectedEmployees->contains('full_name', $employee['full_name'])){
