@@ -47,13 +47,13 @@
     <div>
         <img style="margin-top: 20pt;" src="{{ public_path('images/pdf-header-1.png') }}" alt="">
     </div>
-</htmlpageheader>
+</htmlpageheader> -->
 
 <htmlpagefooter name="page-footer">
-    <div style="padding-bottom: 10pt;">
-        <img src="{{ public_path('images/pdf-footer-1.png') }}" alt="">
+    <div style="padding-bottom: 12pt; font-size: 8pt; text-align: right;">
+        <b>Page {PAGENO} of {nbpg}</b>
     </div>
-</htmlpagefooter> -->
+</htmlpagefooter>
     <p style="text-align: center;">
         <b>
             <span id="heading">Working Schedule</span><br>
